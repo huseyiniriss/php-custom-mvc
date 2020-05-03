@@ -274,6 +274,10 @@ class Model
         return $res ? self::$conn->lastInsertId() : false;
     }
 
+    public static function getLastInsertId(){
+        return self::$conn->lastInsertId();
+    }
+
     public static function get(){
         $sql = self::getLastQuery();
         $query = self::$conn->prepare($sql);
