@@ -41,7 +41,7 @@ class Router
         $uri = explode('?', $_SERVER['REQUEST_URI'])[0];
         $res = preg_match($pattern, $uri, $match);
         $paramNames = array_slice(explode('/:', substr($route, 1)), 1);
-        $paramValues = explode('/', implode(array_slice($match, 1)));
+        $paramValues = explode('/', implode('/', array_slice($match, 1)));
         $args = self::getParams($paramNames, $paramValues);
         if ($res !== 0 && $_SERVER['REQUEST_METHOD'] === $requestType) {
             if (is_callable([__NAMESPACE__.$controller, $callback])){
