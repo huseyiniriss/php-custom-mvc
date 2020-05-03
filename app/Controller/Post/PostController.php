@@ -7,7 +7,9 @@ use Model\User\User;
 class PostController extends Controller
 {
 
-    public function index($request){
+    public function index($request, $args){
+        print_r($args);
+        echo '<br>';
         User::select(['B.boardId'])
             ->distinct()
             ->limit(10, 10)
