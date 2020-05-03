@@ -1,6 +1,9 @@
 <?php
 
-namespace Model;
+namespace QueryBuilder;
+
+use PDO;
+use PDOException;
 
 class Model
 {
@@ -9,6 +12,7 @@ class Model
     private static $joinTable;
     private static $joinType;
     private static $joinOn;
+    private static $bind = [];
     private static $where = [];
     private static $select = [];
     private static $orderBy = [];
@@ -17,19 +21,20 @@ class Model
     private static $limit = 0;
     private static $offset = 0;
     private static $distinct = false;
+    private static $conn;
 
-    private const WHERE = 1;
-    private const WHERE_OR = 2;
-    private const WHERE_NOT = 3;
-    private const WHERE_NULL = 4;
-    private const WHERE_NOT_NULL = 5;
-    private const WHERE_LIKE = 6;
-    private const WHERE_BETWEEN = 7;
-    private const WHERE_IN = 8;
-    private const WHERE_NOT_IN = 9;
-    private const INNER_JOIN = 10;
-    private const LEFT_JOIN = 11;
-    private const RIGHT_JOIN = 12;
+    const WHERE = 1;
+    const WHERE_OR = 2;
+    const WHERE_NOT = 3;
+    const WHERE_NULL = 4;
+    const WHERE_NOT_NULL = 5;
+    const WHERE_LIKE = 6;
+    const WHERE_BETWEEN = 7;
+    const WHERE_IN = 8;
+    const WHERE_NOT_IN = 9;
+    const INNER_JOIN = 10;
+    const LEFT_JOIN = 11;
+    const RIGHT_JOIN = 12;
 
     public static function select($args = [])
     {
@@ -62,9 +67,10 @@ class Model
         self::$where[] = [
             'type' => self::WHERE,
             'column' => $column,
-            'arg' => $arg,
+            'arg' => '?',
             'condition' => $condition,
         ];
+        self::$bind[] = $arg;
         return new static;
     }
 
@@ -73,9 +79,10 @@ class Model
         self::$where[] = [
             'type' => self::WHERE_OR,
             'column' => $column,
-            'arg' => $arg,
+            'arg' => '?',
             'condition' => $condition,
         ];
+        self::$bind[] = $arg;
         return new static;
     }
 
@@ -245,7 +252,6 @@ class Model
     public static function getLastQuery()
     {
         $instance = new static;
-
         $table = $instance->table;
         $alias = $instance->alias;
         $distinct = self::$distinct ? 'DISTINCT' : '';
@@ -255,9 +261,38 @@ class Model
         $joins = self::getJoins();
         $select = empty(self::$select) ? '*' : implode(self::$select, ',');
         $where = self::getWhere();
-
-
-        echo "SELECT $distinct $select FROM $table $alias $where $joins $groupBy $limit$offset";
+        return "SELECT $distinct $select FROM $table $alias $where $joins $groupBy $limit$offset";
     }
 
+    public static function insert($data){
+        $instance = new static;
+        $table = $instance->table;
+        $keys = implode(',', array_keys($data));
+        $values = ':'.implode(', :', array_keys($data));
+        $sql = "INSERT INTO $table ($keys) VALUES ($values)";
+        $res = self::$conn->prepare($sql)->execute($data);
+        return $res ? self::$conn->lastInsertId() : false;
+    }
+
+    public static function get(){
+        $sql = self::getLastQuery();
+        $query = self::$conn->prepare($sql);
+        $query->execute(self::$bind);
+        $result = $query->fetchAll(PDO::FETCH_ASSOC);
+        die(json_encode($result));
+    }
+
+    public static function connectMYSQL($config, $username, $password){
+        try{
+            $configStr = '';
+            foreach ($config as $key=>$c){
+                $configStr .= "$key=$c;";
+            }
+            $conn = new PDO("mysql:$configStr", $username, $password);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            self::$conn = $conn;
+        }catch (PDOException $e){
+            die($e->getMessage());
+        }
+    }
 }

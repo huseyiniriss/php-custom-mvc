@@ -1,8 +1,8 @@
 <?php
 
-namespace Model\User;
+namespace Model;
 
-use Model\Model;
+use QueryBuilder\Model;
 
 class User extends Model {
 

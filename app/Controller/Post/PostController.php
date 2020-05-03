@@ -2,30 +2,33 @@
 namespace Controller\Post;
 
 use Controller\Controller;
-use Model\User\User;
+use Model\User;
 
 class PostController extends Controller
 {
 
     public function index($request, $args){
+        echo 'Params : ';
+        print_r($request);
+        echo '<br>';
+        echo 'Args : ';
         print_r($args);
         echo '<br>';
-        User::select(['B.boardId'])
-            ->distinct()
-            ->limit(10, 10)
-            ->when(1 === 1, function ($q){
-                $q->where('a', 1);
-            })
-            ->orWhere('b',3)
-            ->where('b',3)
-            ->join('tblsiteconfig C', function ($j){
-                $j->on('U.id = C.userId')
-                    ->on('U.id = C.userId');
-            })
-            ->join('tblboardconfig B', function ($j){
-                $j->on('U.id = B.userId')
-                    ->on('C.id = B.siteId');
-            })
-            ->getLastQuery();
+        echo 'SQL : ';
+        User::select(['U.username'])
+            ->where('U.id', 5, '>')
+            ->get();
+
+//        $res = User::insert([
+//            'nameSurname' => 'deneme2',
+//            'email' => 'deneme2',
+//            'username' => 'deneme2',
+//            'password' => 'deneme2',
+//            'phone' => 'deneme2',
+//            'userType' => 'deneme2',
+//            'apiKey' => 'deneme2',
+//            'status' => 'deneme2'
+//        ]);
+
     }
 }
