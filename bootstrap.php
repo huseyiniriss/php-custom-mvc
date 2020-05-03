@@ -15,5 +15,5 @@ spl_autoload_register('loader');
 
 Model::connectMYSQL([
     'host' => 'localhost',
-    'dbname' => 'er_smmpanel'
+    'dbname' => 'db_name'
 ], 'root', '');
